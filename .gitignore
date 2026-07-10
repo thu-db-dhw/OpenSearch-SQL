@@ -3,3 +3,10 @@
 # Environment variables
 .env
 .vscode
+
+# Temporary files
+*.tmp
+tmp_*
+
+# Config files
+llm_config.json

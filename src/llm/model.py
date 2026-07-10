@@ -3,19 +3,28 @@ import dashscope
 import torch
 import json
 import re
+import os
 from runner.logger import Logger
 from llm.prompts import prompts_fewshot_parse
-def model_chose(step,model="gpt-4 32K"):
-    if model.startswith("gpt") or model.startswith("claude") or model.startswith("gemini"):
+
+# 从文件中直接加载BASE_URL和API_KEY
+# 判断文件是否存在
+if os.path.exists("llm_config.json"):
+    with open("llm_config.json", "r") as f:
+        llm_config = json.load(f)
+        BASE_URL = llm_config.get("base_url", "")
+        API_KEY = llm_config.get("api_key", "")
+
+def model_chose(step,model="gpt-4 32K",base_url=BASE_URL,api_key=API_KEY):
+    # 检查base_url和api_key是否为空
+    if not base_url or not api_key:
+        raise ValueError("Base URL and API Key must be provided in llm_config.json")
+    # 国外模型
+    if model.lower().startswith("gpt") or model.startswith("claude") or model.startswith("gemini"):
         return gpt_req(step,model)
-    if model.startswith("glm"):
+    # 国内模型
+    if model.lower().startswith("glm") or model.startswith("qwen") or model.startswith("deepseek"):
         return gpt_req(step,model)
-    if model == "deepseek":
-        return deep_seek(model)
-    if model.startswith("qwen"):
-        return qwenmax(model)
-    if model.startswith("sft"):
-        return sft_req()
 
 
 class req:
@@ -77,8 +86,10 @@ def request(url,model,messages,temperature,top_p,n,key,**k):
 
 class gpt_req(req):
 
-    def __init__(self, step,model="gpt-4o-0513") -> None:
+    def __init__(self,step,model="glm-5",base_url=BASE_URL,api_key=API_KEY) -> None:
         super().__init__(step,model)
+        self.base_url=base_url
+        self.api_key=api_key
 
     def get_ans(self, messages, temperature=0.0, top_p=None,n=1,single=True,**k):
         count = 0
@@ -86,14 +97,14 @@ class gpt_req(req):
             # print(messages) #保存prompt和答案
             try:
                 res = request(
-                url=
-                "",
+                url=self.base_url,
                 model=self.model,
                 messages= messages,
                 temperature=temperature,
                 top_p=top_p,
-                n=n,key="",
-                    **k)
+                n=n,
+                key=self.api_key,
+                **k)
                 if n==1 and single:
                     response_clean = res["choices"][0]["message"]["content"]
                 else:
@@ -112,129 +123,3 @@ class gpt_req(req):
         self.Cost += res["usage"]['prompt_tokens'] / 1000 * 0.042 + res[
             "usage"]["completion_tokens"] / 1000 * 0.126
         return response_clean
-    
-
-
-class deep_seek(req):
-
-    def __init__(self,model) -> None:
-        super().__init__(model)
-    def get_ans(self, messages, temperature=0.0, debug=False):
-        count = 0
-
-        while count < 8:
-            try:
-                url = "https://api.deepseek.com/chat/completions"
-                headers = {
-                    "Content-Type": "application/json",
-                    "Authorization":
-                    ""
-                }
-
-                # 定义请求体
-                jsons = {
-                    "model":
-                    "deepseek-coder",
-                    "temperture":
-                    temperature,
-                    "top_p":
-                    0.9,
-                    "messages": [{
-                        "role": "system",
-                        "content": "You are a helpful assistant."
-                    }, {
-                        "role": "user",
-                        "content": messages
-                    }]
-                }
-
-                # 发送POST请求
-                response = requests.post(url, headers=headers, json=jsons)
-                if debug:
-                    print(response.json)
-                ans = response.json()['choices'][0]['message']['content']
-                break
-            except Exception as e:
-                count += 1
-                time.sleep(2)
-                print(e, count, self.Cost, response.json())
-        return ans
-
-
-class qwenmax(req):
-
-    def __init__(self, model) -> None:
-        super().__init__(model)
-        dashscope.api_key = ""
- 
-
-    def get_ans(self, messages, temperature=0.0, debug=False):
-        count = 0
-
-        while count < 8:
-            try:
-                response = dashscope.Generation.call(model=self.model,
-                                                     temperature=temperature,
-                                                     prompt=messages)
-                self.Cost += response.usage.input_tokens / 1000 * 0.04 + response.usage.output_tokens / 1000 * 0.12
-                return response.output['text']
-            except:
-                count += 1
-                time.sleep(5)
-                print(response.code, response.message)
-
-
-class sft_req(req):
-
-    def __init__(self,model) -> None:
-        super().__init__(model)
-        self.device = "cuda:0"
-        self.tokenizer = AutoTokenizer.from_pretrained(
-            "",
-            trust_remote_code=True,
-            padding_side="right",
-            use_fast=True)
-        self.tokenizer.pad_token = self.tokenizer.eos_token = "<|EOT|>"
-        # drop device_map if running on CPU
-        self.model = AutoModelForCausalLM.from_pretrained(
-            "",
-            torch_dtype=torch.bfloat16,
-            device_map=self.device).eval()
-
-    def get_ans(self, text, temperature=0.0):
-        messages = [{
-            "role":
-            "system",
-            "content":
-            "You are an AI programming assistant, utilizing the DeepSeek Coder model, developed by DeepSeek Company, and you only answer questions related to computer science. For politically sensitive questions, security and privacy issues, and other non-computer science questions, you will refuse to answer."
-        }, {
-            "role": "user",
-            "content": text
-        }]
-        inputs = self.tokenizer.apply_chat_template(messages,
-                                                    add_generation_prompt=True,
-                                                    tokenize=False)
-        model_inputs = self.tokenizer([inputs],
-                                      return_tensors="pt",
-                                      max_length=8000).to("cuda")
-        # tokenizer.eos_token_id is the id of <|EOT|> token
-        generated_ids = self.model.generate(
-            model_inputs.input_ids,
-            attention_mask=model_inputs["attention_mask"],
-            max_new_tokens=800,
-            do_sample=False,
-            eos_token_id=self.tokenizer.eos_token_id,
-            pad_token_id=self.tokenizer.pad_token_id)
-        generated_ids = [
-            output_ids[len(input_ids):] for input_ids, output_ids in zip(
-                model_inputs.input_ids, generated_ids)
-        ]
-
-        response = self.tokenizer.decode(generated_ids[0][:-1],
-                                         skip_special_tokens=True).strip()
-        return response
-
-
-
-
-

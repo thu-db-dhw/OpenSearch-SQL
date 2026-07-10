@@ -19,7 +19,6 @@ pipeline_nodes='generate_db_schema+extract_col_value+extract_query_noun+column_r
     # vote
     # evaluation
 
-AK='your_ak' #set your ak in src/llm/model.py
 engine1='gpt-4o-0513'
 engine2='gpt-3.5-turbo-0125'
 engine3='gpt-4-turbo'
@@ -30,6 +29,9 @@ engine7='meta-llama/Meta-Llama-3-70B-Instruct'
 engine8='finetuned_colsel'
 engine9='finetuned_col_filter'
 engine10='gpt-3.5-turbo-instruct'
+
+# 平台支持的模型
+# 根据LLM配置文件加载Base URL和API Key以及模型列表
 
 ## n默认21 
 #align_methods:style_align+function_align+agent_align
