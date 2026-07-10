@@ -47,6 +47,10 @@ if __name__ == '__main__':
     args_parser.add_argument('--log_level', type=str, default='warning', help="Logging level.")
     args_parser.add_argument('--start', type=int, default=0, help="Start point")
     args_parser.add_argument('--end', type=int, default=1, help="End point")
+    # TODO: 添加BASE_URL和API_KEY参数
+    args_parser.add_argument('--base_url', type=str, required=False, help="Base URL for the LLM API.")
+    args_parser.add_argument('--api_key', type=str, required=False, help="API Key for the LLM API.")
+    
     args = args_parser.parse_args()
     args.run_start_time = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
 

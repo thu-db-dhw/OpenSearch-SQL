@@ -84,7 +84,7 @@ if __name__ == '__main__':
     parser.add_argument('--model',
                         type=str,
                         help='model',
-                        default="gpt-4o-mini-0718")
+                        default="GLM-5")
     parser.add_argument('--start',
                         type=int,
                         help='start_point',

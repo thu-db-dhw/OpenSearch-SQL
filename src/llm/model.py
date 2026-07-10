@@ -3,19 +3,32 @@ import dashscope
 import torch
 import json
 import re
-import os
+from pathlib import Path
 from runner.logger import Logger
 from llm.prompts import prompts_fewshot_parse
 
-# 从文件中直接加载BASE_URL和API_KEY
-# 判断文件是否存在
-if os.path.exists("llm_config.json"):
-    with open("llm_config.json", "r") as f:
+BASE_URL = ""
+API_KEY = ""
+
+
+def _find_config_file(config_name="llm_config.json"):
+    # 从当前模块目录向上查找，确保在任意工作目录运行都能找到项目根配置
+    current_dir = Path(__file__).resolve().parent
+    for parent in [current_dir, *current_dir.parents]:
+        candidate = parent / config_name
+        if candidate.is_file():
+            return candidate
+    return None
+
+
+config_path = _find_config_file()
+if config_path:
+    with config_path.open("r", encoding="utf-8") as f:
         llm_config = json.load(f)
         BASE_URL = llm_config.get("base_url", "")
         API_KEY = llm_config.get("api_key", "")
 
-def model_chose(step,model="gpt-4 32K",base_url=BASE_URL,api_key=API_KEY):
+def model_chose(step,model="GLM-5",base_url=BASE_URL,api_key=API_KEY):
     # 检查base_url和api_key是否为空
     if not base_url or not api_key:
         raise ValueError("Base URL and API Key must be provided in llm_config.json")

@@ -5,7 +5,13 @@ dependencies:
   - python=3.11
   - pip
 variables:
-  HF_ENDPOINT: https://hf-mirror.com
-  HF_HUB_CACHE: ~/data/huggingface/hub
-  MODELSCOPE_CACHE: ~/data/modelscope
-  HF_HOME: ~/data/huggingface
+  # 可选：设置国内的 Hugging Face 镜像源
+  # HF_ENDPOINT: https://hf-mirror.com
+  HF_ENDPOINT: https://huggingface.co
+  HF_HOME: $HOME/data/huggingface
+  HF_HUB_CACHE: $HOME/data/huggingface/hub
+  # 可选：设置国内的 ModelScope 镜像源
+  # MODELSCOPE_ENDPOINT: https://modelscope-mirror.com
+  MODELSCOPE_ENDPOINT: https://modelscope.cn
+  MODELSCOPE_CACHE: $HOME/data/modelscope
+  
