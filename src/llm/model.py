@@ -6,7 +6,9 @@ import re
 from runner.logger import Logger
 from llm.prompts import prompts_fewshot_parse
 def model_chose(step,model="gpt-4 32K"):
-    if model.startswith("gpt") or model.startswith("claude35_sonnet") or model.startswith("gemini"):
+    if model.startswith("gpt") or model.startswith("claude") or model.startswith("gemini"):
+        return gpt_req(step,model)
+    if model.startswith("glm"):
         return gpt_req(step,model)
     if model == "deepseek":
         return deep_seek(model)
