@@ -1,0 +1,11 @@
+name: OpenSearch-SQL
+channels:
+  - defaults
+dependencies:
+  - python=3.11
+  - pip
+variables:
+  HF_ENDPOINT: https://hf-mirror.com
+  HF_HUB_CACHE: ~/data/huggingface/hub
+  MODELSCOPE_CACHE: ~/data/modelscope
+  HF_HOME: ~/data/huggingface
