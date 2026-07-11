@@ -10,3 +10,6 @@ tmp_*
 
 # Config files
 llm_config.json
+
+# Model files
+bge

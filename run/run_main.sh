@@ -32,6 +32,12 @@ engine10='gpt-3.5-turbo-instruct'
 
 # 平台支持的模型
 # 根据LLM配置文件加载Base URL和API Key以及模型列表
+engine11='GLM-5'
+engine12='GLM-5-Turbo'
+engine13='GLM-5.1'
+engine14='GLM-5.2'
+
+bert_model='bge'
 
 ## n默认21 
 #align_methods:style_align+function_align+agent_align
@@ -74,36 +80,36 @@ engine10='gpt-3.5-turbo-instruct'
 # }'  
 pipeline_setup='{
     "generate_db_schema": {
-        "engine": "'${engine1}'",
-        "bert_model": "your_bert_model_path",  
+        "engine": "'${engine11}'",
+        "bert_model": "'${bert_model}'",  
         "device":"cpu"
     },
     "extract_col_value": {
-        "engine": "'${engine1}'",
+        "engine": "'${engine11}'",
         "temperature":0.0
     },
     "extract_query_noun": {
-        "engine": "'${engine1}'",
+        "engine": "'${engine11}'",
         "temperature":0.0
     },
     "column_retrieve_and_other_info": {
-        "engine": "'${engine1}'",
-        "bert_model": "your_bert_model_path",  
+        "engine": "'${engine11}'",
+        "bert_model": "'${bert_model}'",  
         "device":"cpu",
         "temperature":0.3,
         "top_k":10
     },
     "candidate_generate":{
-        "engine": "'${engine1}'",
+        "engine": "'${engine11}'",
         "temperature": 0.7,  
         "n":21,
         "return_question":"True",
         "single":"False"
     },
     "align_correct":{
-        "engine": "'${engine1}'",
+        "engine": "'${engine11}'",
         "n":21,
-        "bert_model": "your_bert_model_path:e.g. /opensearch-sql/bge",  
+        "bert_model": "'${bert_model}'",  
         "device":"cpu",
         "align_methods":"style_align+function_align+agent_align"
     }
